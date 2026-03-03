@@ -1,0 +1,1063 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>分帳神器 · SplitEase</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #0d0d0d;
+    --paper: #faf9f6;
+    --cream: #f2efe8;
+    --accent: #e8533a;
+    --accent2: #3a7de8;
+    --gold: #c9a84c;
+    --green: #2d9e6b;
+    --border: #e0ddd6;
+    --muted: #888880;
+    --card: #ffffff;
+    --shadow: 0 2px 16px rgba(13,13,13,0.08);
+    --radius: 16px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--paper);
+    color: var(--ink);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(250,249,246,0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1.5px solid var(--border);
+    padding: 0 24px;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 60px;
+  }
+  .nav-logo {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800; font-size: 1.2rem;
+    letter-spacing: -0.5px; color: var(--ink);
+  }
+  .nav-logo span { color: var(--accent); }
+  .nav-tabs { display: flex; gap: 4px; }
+  .nav-tab {
+    padding: 7px 16px; border-radius: 50px;
+    border: none; background: none; cursor: pointer;
+    font-family: 'DM Sans', sans-serif; font-size: 0.875rem; font-weight: 500;
+    color: var(--muted); transition: all 0.2s;
+  }
+  .nav-tab.active { background: var(--ink); color: #fff; }
+  .nav-tab:hover:not(.active) { background: var(--cream); color: var(--ink); }
+
+  /* ── PAGES ── */
+  .page { display: none; padding: 28px 24px 80px; max-width: 900px; margin: 0 auto; }
+  .page.active { display: block; animation: fadeUp 0.35s ease; }
+  @keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+
+  /* ── HEADINGS ── */
+  .page-header { margin-bottom: 28px; }
+  .page-header h1 {
+    font-family: 'Syne', sans-serif; font-weight: 800;
+    font-size: 2rem; letter-spacing: -1px; line-height: 1.1;
+  }
+  .page-header p { color: var(--muted); margin-top: 6px; font-size: 0.9rem; }
+
+  /* ── BUTTONS ── */
+  .btn {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 10px 20px; border-radius: 50px; border: none;
+    font-family: 'DM Sans', sans-serif; font-size: 0.875rem; font-weight: 600;
+    cursor: pointer; transition: all 0.18s;
+  }
+  .btn-primary { background: var(--ink); color: #fff; }
+  .btn-primary:hover { background: #333; transform: translateY(-1px); }
+  .btn-accent { background: var(--accent); color: #fff; }
+  .btn-accent:hover { background: #d0452e; transform: translateY(-1px); }
+  .btn-ghost {
+    background: none; border: 1.5px solid var(--border); color: var(--ink);
+  }
+  .btn-ghost:hover { border-color: var(--ink); background: var(--cream); }
+  .btn-sm { padding: 6px 14px; font-size: 0.8rem; }
+  .btn-icon { padding: 8px; border-radius: 10px; }
+
+  /* ── CARDS ── */
+  .card {
+    background: var(--card); border: 1.5px solid var(--border);
+    border-radius: var(--radius); padding: 20px;
+    box-shadow: var(--shadow); transition: all 0.2s;
+  }
+  .card:hover { box-shadow: 0 4px 24px rgba(13,13,13,0.12); }
+
+  /* ── FORM ── */
+  .form-group { margin-bottom: 16px; }
+  .form-label {
+    display: block; font-size: 0.8rem; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted);
+    margin-bottom: 6px;
+  }
+  .form-input, .form-select, .form-textarea {
+    width: 100%; padding: 11px 14px;
+    border: 1.5px solid var(--border); border-radius: 12px;
+    font-family: 'DM Sans', sans-serif; font-size: 0.9rem;
+    background: var(--paper); color: var(--ink);
+    transition: border-color 0.2s;
+    outline: none;
+  }
+  .form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--ink); }
+  .form-textarea { resize: vertical; min-height: 72px; }
+  .form-row { display: grid; gap: 12px; }
+  .form-row.cols-2 { grid-template-columns: 1fr 1fr; }
+  .form-row.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+
+  /* ── MODAL ── */
+  .modal-overlay {
+    display: none; position: fixed; inset: 0; z-index: 200;
+    background: rgba(13,13,13,0.55); backdrop-filter: blur(4px);
+    align-items: center; justify-content: center; padding: 20px;
+  }
+  .modal-overlay.open { display: flex; animation: fadeIn 0.2s ease; }
+  @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+  .modal {
+    background: var(--card); border-radius: 20px; padding: 28px;
+    width: 100%; max-width: 520px; max-height: 90vh; overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+    animation: slideUp 0.3s ease;
+  }
+  @keyframes slideUp { from { transform: translateY(20px); opacity:0; } to { transform: none; opacity:1; } }
+  .modal-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 24px;
+  }
+  .modal-title { font-family: 'Syne', sans-serif; font-size: 1.3rem; font-weight: 700; }
+  .modal-close {
+    width: 32px; height: 32px; border-radius: 50%; border: none;
+    background: var(--cream); cursor: pointer; font-size: 1rem;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.2s;
+  }
+  .modal-close:hover { background: var(--border); }
+
+  /* ── GATHERING LIST ── */
+  .gathering-grid { display: grid; gap: 14px; }
+  .gathering-card {
+    cursor: pointer; display: flex; align-items: flex-start;
+    justify-content: space-between; gap: 12px;
+  }
+  .gathering-card:hover { transform: translateY(-2px); }
+  .gathering-info h3 {
+    font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1rem;
+    margin-bottom: 4px;
+  }
+  .gathering-meta { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 8px; }
+  .tag {
+    padding: 3px 10px; border-radius: 50px; font-size: 0.75rem; font-weight: 600;
+    background: var(--cream); color: var(--muted);
+  }
+  .tag.green { background: #d4f5e5; color: var(--green); }
+  .tag.blue { background: #dbeafe; color: var(--accent2); }
+  .tag.red { background: #fde8e5; color: var(--accent); }
+  .gathering-amount {
+    text-align: right; flex-shrink: 0;
+  }
+  .gathering-amount .total {
+    font-family: 'Syne', sans-serif; font-size: 1.3rem; font-weight: 800;
+    color: var(--ink);
+  }
+  .gathering-amount .label { font-size: 0.75rem; color: var(--muted); }
+
+  /* ── EXPENSE LIST ── */
+  .expense-row {
+    display: flex; align-items: center; gap: 12px;
+    padding: 14px 0; border-bottom: 1px solid var(--border);
+  }
+  .expense-row:last-child { border-bottom: none; }
+  .expense-avatar {
+    width: 38px; height: 38px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 0.85rem; flex-shrink: 0;
+  }
+  .expense-info { flex: 1; min-width: 0; }
+  .expense-info .name { font-weight: 600; font-size: 0.9rem; }
+  .expense-info .desc { font-size: 0.8rem; color: var(--muted); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .expense-amount { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1rem; flex-shrink: 0; }
+  .expense-thumb {
+    width: 48px; height: 48px; border-radius: 10px; object-fit: cover;
+    border: 1.5px solid var(--border); cursor: pointer; flex-shrink: 0;
+  }
+
+  /* ── SUMMARY PANEL ── */
+  .summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+  .summary-stat { padding: 16px; background: var(--cream); border-radius: 14px; }
+  .summary-stat .val {
+    font-family: 'Syne', sans-serif; font-size: 1.5rem; font-weight: 800;
+  }
+  .summary-stat .lbl { font-size: 0.78rem; color: var(--muted); margin-top: 3px; }
+  .balance-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 16px; border-radius: 12px; background: var(--cream);
+    margin-bottom: 8px;
+  }
+  .balance-row .person { font-weight: 600; font-size: 0.9rem; }
+  .balance-row .amount { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.95rem; }
+  .balance-row.owed .amount { color: var(--accent); }
+  .balance-row.owns .amount { color: var(--green); }
+
+  /* ── SETTLEMENT ── */
+  .settlement-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 14px 16px; border-radius: 14px; background: #fff8f0;
+    border: 1.5px solid #f5d5b8; margin-bottom: 8px;
+    font-size: 0.88rem; font-weight: 500;
+  }
+  .settlement-row .arrow { color: var(--gold); font-size: 1.1rem; }
+  .settlement-row .amt { font-family: 'Syne', sans-serif; font-weight: 800; color: var(--gold); margin-left: auto; }
+
+  /* ── TIPS SLIDER ── */
+  .tips-control {
+    background: var(--cream); border-radius: 14px; padding: 16px;
+    margin-bottom: 16px;
+  }
+  .tips-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+  .tips-label { font-weight: 600; font-size: 0.88rem; }
+  .tips-value {
+    font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.1rem;
+    color: var(--accent);
+  }
+  input[type=range] {
+    width: 100%; -webkit-appearance: none; height: 6px;
+    border-radius: 3px; background: var(--border); outline: none;
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 20px; height: 20px;
+    border-radius: 50%; background: var(--accent); cursor: pointer;
+    box-shadow: 0 2px 8px rgba(232,83,58,0.4);
+  }
+  .tips-presets { display: flex; gap: 8px; margin-top: 12px; }
+  .tips-preset {
+    padding: 5px 14px; border-radius: 50px; border: 1.5px solid var(--border);
+    background: none; font-size: 0.8rem; font-weight: 600; cursor: pointer;
+    transition: all 0.18s;
+  }
+  .tips-preset:hover, .tips-preset.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+  /* ── MEMBER CHIPS ── */
+  .member-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .member-chip {
+    display: flex; align-items: center; gap: 6px;
+    padding: 5px 12px 5px 6px; border-radius: 50px;
+    border: 1.5px solid var(--border); font-size: 0.82rem; font-weight: 500;
+    cursor: pointer; transition: all 0.18s;
+  }
+  .member-chip .chip-av {
+    width: 24px; height: 24px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.7rem; font-weight: 700;
+  }
+  .member-chip.selected { border-color: var(--ink); background: var(--ink); color: #fff; }
+  .member-chip.selected .chip-av { filter: brightness(1.3); }
+
+  /* ── GROUP CARDS ── */
+  .group-grid { display: grid; gap: 14px; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
+  .group-card { cursor: pointer; }
+  .group-card:hover { transform: translateY(-3px); }
+  .group-banner {
+    height: 80px; border-radius: 10px; margin-bottom: 14px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 2rem;
+  }
+  .group-card h3 { font-family: 'Syne', sans-serif; font-weight: 700; margin-bottom: 6px; }
+  .group-members-preview { display: flex; margin-top: 10px; }
+  .group-member-av {
+    width: 30px; height: 30px; border-radius: 50%;
+    border: 2px solid #fff; margin-left: -8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.72rem; font-weight: 700; flex-shrink: 0;
+  }
+  .group-member-av:first-child { margin-left: 0; }
+
+  /* ── IMAGE UPLOAD ── */
+  .upload-area {
+    border: 2px dashed var(--border); border-radius: 14px; padding: 20px;
+    text-align: center; cursor: pointer; transition: all 0.2s;
+    background: var(--cream);
+  }
+  .upload-area:hover { border-color: var(--accent); background: #fff5f3; }
+  .upload-area input { display: none; }
+  .upload-preview {
+    position: relative; display: inline-block; margin-top: 10px;
+  }
+  .upload-preview img {
+    max-width: 120px; max-height: 100px; border-radius: 10px;
+    border: 1.5px solid var(--border);
+  }
+  .upload-preview .remove-img {
+    position: absolute; top: -8px; right: -8px; width: 22px; height: 22px;
+    border-radius: 50%; background: var(--accent); color: #fff;
+    border: none; cursor: pointer; font-size: 0.75rem; line-height: 22px;
+    text-align: center;
+  }
+
+  /* ── SHARE BANNER ── */
+  .share-bar {
+    display: flex; align-items: center; gap: 10px;
+    background: #f0f5ff; border: 1.5px solid #c7d8f8;
+    border-radius: 14px; padding: 12px 16px; margin-bottom: 20px;
+  }
+  .share-bar .url {
+    flex: 1; font-size: 0.8rem; color: var(--accent2);
+    font-family: monospace; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+
+  /* ── IMAGE LIGHTBOX ── */
+  .lightbox {
+    display: none; position: fixed; inset: 0; z-index: 300;
+    background: rgba(0,0,0,0.85); align-items: center; justify-content: center;
+  }
+  .lightbox.open { display: flex; }
+  .lightbox img { max-width: 90vw; max-height: 85vh; border-radius: 12px; }
+  .lightbox-close {
+    position: absolute; top: 20px; right: 20px;
+    background: rgba(255,255,255,0.15); border: none; color: #fff;
+    width: 40px; height: 40px; border-radius: 50%; font-size: 1.2rem;
+    cursor: pointer;
+  }
+
+  /* ── DETAIL VIEW ── */
+  .back-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 0.85rem; font-weight: 600; cursor: pointer;
+    color: var(--muted); margin-bottom: 20px;
+    background: none; border: none;
+  }
+  .back-btn:hover { color: var(--ink); }
+
+  /* ── DIVIDER ── */
+  .divider { border: none; border-top: 1.5px solid var(--border); margin: 20px 0; }
+  .section-title {
+    font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1rem;
+    margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between;
+  }
+
+  /* ── TOAST ── */
+  #toast {
+    position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+    background: var(--ink); color: #fff; padding: 12px 24px;
+    border-radius: 50px; font-size: 0.875rem; font-weight: 500;
+    z-index: 999; opacity: 0; transition: opacity 0.3s;
+    pointer-events: none;
+  }
+  #toast.show { opacity: 1; }
+
+  /* ── EMPTY STATE ── */
+  .empty-state {
+    text-align: center; padding: 60px 20px; color: var(--muted);
+  }
+  .empty-state .icon { font-size: 3rem; margin-bottom: 12px; }
+  .empty-state h3 { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1.1rem; color: var(--ink); margin-bottom: 6px; }
+
+  @media (max-width: 600px) {
+    .form-row.cols-2, .form-row.cols-3 { grid-template-columns: 1fr; }
+    .summary-grid { grid-template-columns: 1fr 1fr; }
+    nav { padding: 0 14px; }
+    .page { padding: 20px 14px 80px; }
+    .page-header h1 { font-size: 1.6rem; }
+    .nav-tab { padding: 6px 10px; font-size: 0.8rem; }
+  }
+
+  .color-0 { background: #ffe4d6; color: #c94a2a; }
+  .color-1 { background: #d6e8ff; color: #2a5ec9; }
+  .color-2 { background: #d6ffe4; color: #2ac97a; }
+  .color-3 { background: #fff3d6; color: #c9922a; }
+  .color-4 { background: #ead6ff; color: #882ac9; }
+  .color-5 { background: #ffd6f0; color: #c92a88; }
+  .color-6 { background: #d6f8ff; color: #2aaec9; }
+  .color-7 { background: #f0ffd6; color: #7bc92a; }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">Split<span>Ease</span></div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="showPage('gatherings')">聚會記錄</button>
+    <button class="nav-tab" onclick="showPage('groups')">群組管理</button>
+  </div>
+</nav>
+
+<!-- ══════════════════ PAGE: GATHERINGS ══════════════════ -->
+<div id="page-gatherings" class="page active">
+  <div class="page-header">
+    <h1>聚會記錄</h1>
+    <p>所有活動的消費記錄，輕鬆分帳結算</p>
+  </div>
+  <div style="display:flex;gap:10px;margin-bottom:24px;flex-wrap:wrap;">
+    <button class="btn btn-primary" onclick="openNewGatheringModal()">＋ 新增聚會</button>
+  </div>
+  <div id="gatherings-list" class="gathering-grid"></div>
+</div>
+
+<!-- ══════════════════ PAGE: GATHERING DETAIL ══════════════════ -->
+<div id="page-detail" class="page">
+  <button class="back-btn" onclick="showPage('gatherings')">← 返回聚會列表</button>
+  <div id="detail-content"></div>
+</div>
+
+<!-- ══════════════════ PAGE: GROUPS ══════════════════ -->
+<div id="page-groups" class="page">
+  <div class="page-header">
+    <h1>群組管理</h1>
+    <p>管理你的朋友群組，快速套用至聚會</p>
+  </div>
+  <div style="display:flex;gap:10px;margin-bottom:24px;">
+    <button class="btn btn-primary" onclick="openNewGroupModal()">＋ 新增群組</button>
+  </div>
+  <div id="groups-list" class="group-grid"></div>
+</div>
+
+<!-- ══════════════════ MODALS ══════════════════ -->
+
+<!-- New Gathering Modal -->
+<div class="modal-overlay" id="modal-gathering">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">新增聚會</span>
+      <button class="modal-close" onclick="closeModal('modal-gathering')">✕</button>
+    </div>
+    <div class="form-group">
+      <label class="form-label">聚會名稱</label>
+      <input class="form-input" id="g-name" placeholder="例：大學同學聚餐 🍜">
+    </div>
+    <div class="form-group">
+      <label class="form-label">日期</label>
+      <input class="form-input" id="g-date" type="date">
+    </div>
+    <div class="form-group">
+      <label class="form-label">選擇群組（可選）</label>
+      <select class="form-select" id="g-group" onchange="onGatheringGroupChange()">
+        <option value="">不選群組，手動加入成員</option>
+      </select>
+    </div>
+    <div class="form-group" id="g-manual-members-wrap">
+      <label class="form-label">手動加入成員（逗號分隔）</label>
+      <input class="form-input" id="g-members" placeholder="例：Alice, Bob, Carol">
+    </div>
+    <div class="form-group">
+      <label class="form-label">幣別</label>
+      <select class="form-select" id="g-currency">
+        <option value="HKD">HKD 港幣</option>
+        <option value="TWD" selected>TWD 台幣</option>
+        <option value="USD">USD 美金</option>
+        <option value="JPY">JPY 日圓</option>
+        <option value="CNY">CNY 人民幣</option>
+      </select>
+    </div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:20px;">
+      <button class="btn btn-ghost" onclick="closeModal('modal-gathering')">取消</button>
+      <button class="btn btn-primary" onclick="createGathering()">建立聚會</button>
+    </div>
+  </div>
+</div>
+
+<!-- New Expense Modal -->
+<div class="modal-overlay" id="modal-expense">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">新增消費</span>
+      <button class="modal-close" onclick="closeModal('modal-expense')">✕</button>
+    </div>
+    <div class="form-group">
+      <label class="form-label">描述</label>
+      <input class="form-input" id="e-desc" placeholder="例：晚餐、計程車費...">
+    </div>
+    <div class="form-row cols-2">
+      <div class="form-group">
+        <label class="form-label">金額</label>
+        <input class="form-input" id="e-amount" type="number" placeholder="0" oninput="updateExpenseTips()">
+      </div>
+      <div class="form-group">
+        <label class="form-label">付款人</label>
+        <select class="form-select" id="e-payer"></select>
+      </div>
+    </div>
+
+    <!-- TIPS -->
+    <div class="tips-control">
+      <div class="tips-header">
+        <span class="tips-label">🫰 小費 Tips</span>
+        <span class="tips-value" id="e-tips-display">0%</span>
+      </div>
+      <input type="range" id="e-tips-range" min="0" max="30" value="0" step="1" oninput="onTipsRange()">
+      <div class="tips-presets">
+        <button class="tips-preset active" onclick="setTips(0)">0%</button>
+        <button class="tips-preset" onclick="setTips(10)">10%</button>
+        <button class="tips-preset" onclick="setTips(15)">15%</button>
+        <button class="tips-preset" onclick="setTips(20)">20%</button>
+      </div>
+      <div style="margin-top:12px;font-size:0.82rem;color:var(--muted);">
+        小費金額：<strong id="e-tips-amount">$0</strong> &nbsp;·&nbsp; 含稅後總計：<strong id="e-tips-total">$0</strong>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">分攤成員</label>
+      <div id="e-split-members" class="member-chips"></div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">上傳收據圖片（可選）</label>
+      <div class="upload-area" onclick="document.getElementById('e-image-input').click()">
+        <div id="e-upload-hint">📎 點擊上傳圖片</div>
+        <div id="e-upload-preview"></div>
+        <input type="file" id="e-image-input" accept="image/*" onchange="handleImageUpload(event)">
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:20px;">
+      <button class="btn btn-ghost" onclick="closeModal('modal-expense')">取消</button>
+      <button class="btn btn-primary" onclick="addExpense()">加入消費</button>
+    </div>
+  </div>
+</div>
+
+<!-- New Group Modal -->
+<div class="modal-overlay" id="modal-group">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title" id="group-modal-title">新增群組</span>
+      <button class="modal-close" onclick="closeModal('modal-group')">✕</button>
+    </div>
+    <div class="form-group">
+      <label class="form-label">群組名稱</label>
+      <input class="form-input" id="grp-name" placeholder="例：大學同學">
+    </div>
+    <div class="form-group">
+      <label class="form-label">群組 Emoji</label>
+      <input class="form-input" id="grp-emoji" placeholder="🍻" maxlength="2" style="font-size:1.5rem;text-align:center;">
+    </div>
+    <div class="form-group">
+      <label class="form-label">成員（每行一個）</label>
+      <textarea class="form-textarea" id="grp-members" placeholder="Alice&#10;Bob&#10;Carol" rows="5"></textarea>
+    </div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:20px;">
+      <button class="btn btn-ghost" onclick="closeModal('modal-group')">取消</button>
+      <button class="btn btn-primary" onclick="saveGroup()">儲存</button>
+    </div>
+  </div>
+</div>
+
+<!-- Share Modal -->
+<div class="modal-overlay" id="modal-share">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">分享聚會連結</span>
+      <button class="modal-close" onclick="closeModal('modal-share')">✕</button>
+    </div>
+    <p style="font-size:0.88rem;color:var(--muted);margin-bottom:16px;">傳送以下連結給朋友，讓他們自行加入消費記錄</p>
+    <div class="share-bar">
+      <span class="url" id="share-url-text"></span>
+      <button class="btn btn-sm btn-primary" onclick="copyShareUrl()">複製</button>
+    </div>
+    <div style="background:var(--cream);border-radius:14px;padding:14px;font-size:0.83rem;color:var(--muted);">
+      💡 朋友開啟連結後可直接加入消費，無需登入
+    </div>
+  </div>
+</div>
+
+<!-- Lightbox -->
+<div class="lightbox" id="lightbox" onclick="closeLightbox()">
+  <button class="lightbox-close" onclick="closeLightbox()">✕</button>
+  <img id="lightbox-img" src="" alt="收據">
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ════════════════════════════════════════════
+//  STATE
+// ════════════════════════════════════════════
+let state = {
+  gatherings: [],
+  groups: [],
+  currentGatheringId: null,
+  editingGroupId: null,
+  currentExpenseImage: null,
+  currentTips: 0
+};
+
+const COLORS = ['color-0','color-1','color-2','color-3','color-4','color-5','color-6','color-7'];
+function colorFor(name) { let h=0; for(let c of name) h=(h*31+c.charCodeAt(0))&0xfff; return COLORS[h%COLORS.length]; }
+function initials(n) { return n.trim().split(/\s+/).map(w=>w[0]).join('').toUpperCase().slice(0,2)||'?'; }
+function uid() { return Date.now().toString(36)+Math.random().toString(36).slice(2,6); }
+function fmt(n, curr) { return (curr||'$')+' '+Number(n).toFixed(2); }
+
+// ─── SEED DATA ───
+function seed() {
+  const g1id = uid();
+  state.groups = [
+    { id: uid(), name: '大學同學', emoji: '🎓', members: ['Alice','Bob','Carol','David'] },
+    { id: uid(), name: '公司同事', emoji: '💼', members: ['Eric','Fiona','George'] }
+  ];
+  state.gatherings = [
+    {
+      id: g1id,
+      name: '大學同學聚餐',
+      date: '2025-03-01',
+      currency: 'TWD',
+      members: ['Alice','Bob','Carol','David'],
+      expenses: [
+        { id: uid(), desc: '晚餐', amount: 1200, payer: 'Alice', splitWith: ['Alice','Bob','Carol','David'], tips: 10, image: null },
+        { id: uid(), desc: '計程車', amount: 320, payer: 'Bob', splitWith: ['Alice','Bob','Carol'], tips: 0, image: null }
+      ]
+    }
+  ];
+}
+
+// ════════════════════════════════════════════
+//  NAVIGATION
+// ════════════════════════════════════════════
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  const tabs = document.querySelectorAll('.nav-tab');
+  if (name === 'gatherings' || name === 'detail') tabs[0].classList.add('active');
+  if (name === 'groups') tabs[1].classList.add('active');
+  if (name === 'gatherings') renderGatherings();
+  if (name === 'groups') renderGroups();
+}
+
+// ════════════════════════════════════════════
+//  GATHERINGS LIST
+// ════════════════════════════════════════════
+function renderGatherings() {
+  const el = document.getElementById('gatherings-list');
+  if (!state.gatherings.length) {
+    el.innerHTML = `<div class="empty-state"><div class="icon">🍽️</div><h3>還沒有聚會記錄</h3><p>點擊「新增聚會」開始記錄吧！</p></div>`;
+    return;
+  }
+  el.innerHTML = state.gatherings.slice().reverse().map(g => {
+    const total = totalWithTips(g);
+    const per = g.members.length ? total/g.members.length : 0;
+    return `<div class="card gathering-card" onclick="openDetail('${g.id}')">
+      <div class="gathering-info">
+        <h3>${g.name}</h3>
+        <div style="font-size:0.82rem;color:var(--muted)">${g.date}</div>
+        <div class="gathering-meta">
+          <span class="tag blue">👥 ${g.members.length} 人</span>
+          <span class="tag">${g.expenses.length} 筆消費</span>
+          <span class="tag">${g.currency}</span>
+        </div>
+      </div>
+      <div class="gathering-amount">
+        <div class="total">${g.currency} ${total.toFixed(0)}</div>
+        <div class="label">每人約 ${per.toFixed(0)}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function totalWithTips(g) {
+  return g.expenses.reduce((s,e) => s + amountWithTips(e), 0);
+}
+function amountWithTips(e) {
+  return e.amount * (1 + (e.tips||0)/100);
+}
+
+// ════════════════════════════════════════════
+//  GATHERING DETAIL
+// ════════════════════════════════════════════
+function openDetail(id) {
+  state.currentGatheringId = id;
+  renderDetail();
+  showPage('detail');
+}
+
+function renderDetail() {
+  const g = state.gatherings.find(x=>x.id===state.currentGatheringId);
+  if (!g) return;
+  const total = totalWithTips(g);
+  const shareUrl = `${location.href.split('?')[0]}?gather=${g.id}`;
+
+  // Build balance
+  const bal = {};
+  g.members.forEach(m => bal[m] = 0);
+  g.expenses.forEach(e => {
+    const amt = amountWithTips(e);
+    const share = amt / (e.splitWith.length||1);
+    e.splitWith.forEach(m => { if(bal[m]!==undefined) bal[m] -= share; });
+    if(bal[e.payer]!==undefined) bal[e.payer] += amt;
+  });
+
+  const settlements = calcSettlements(bal);
+
+  const expensesHtml = g.expenses.length ? g.expenses.map(e => {
+    const imgHtml = e.image ? `<img class="expense-thumb" src="${e.image}" onclick="openLightbox('${e.image.replace(/'/g,"\\'")}')">` : '';
+    const tipsHtml = e.tips ? `<span class="tag" style="margin-left:4px">🫰 ${e.tips}%</span>` : '';
+    return `<div class="expense-row">
+      <div class="expense-avatar ${colorFor(e.payer)}">${initials(e.payer)}</div>
+      <div class="expense-info">
+        <div class="name">${e.desc} ${tipsHtml}</div>
+        <div class="desc">由 ${e.payer} 付款 · 分攤: ${e.splitWith.join(', ')}</div>
+      </div>
+      ${imgHtml}
+      <div class="expense-amount">${g.currency} ${amountWithTips(e).toFixed(0)}</div>
+      <button class="btn btn-ghost btn-sm btn-icon" onclick="deleteExpense('${e.id}')" title="刪除">🗑</button>
+    </div>`;
+  }).join('') : `<div style="text-align:center;padding:30px;color:var(--muted)">還沒有消費記錄</div>`;
+
+  const balHtml = g.members.map(m => {
+    const v = bal[m]||0;
+    const cls = v>=0?'owns':'owed';
+    return `<div class="balance-row ${cls}">
+      <div class="expense-avatar ${colorFor(m)}" style="width:32px;height:32px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:700;margin-right:8px">${initials(m)}</div>
+      <div class="person">${m}</div>
+      <div class="amount">${v>=0?'+':''}${g.currency} ${Math.abs(v).toFixed(0)}</div>
+    </div>`;
+  }).join('');
+
+  const settlHtml = settlements.length ? settlements.map(s=>
+    `<div class="settlement-row">
+      <div class="expense-avatar ${colorFor(s.from)}" style="width:28px;height:28px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:0.68rem;font-weight:700">${initials(s.from)}</div>
+      <strong>${s.from}</strong>
+      <span class="arrow">→</span>
+      <div class="expense-avatar ${colorFor(s.to)}" style="width:28px;height:28px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:0.68rem;font-weight:700">${initials(s.to)}</div>
+      <strong>${s.to}</strong>
+      <div class="amt">${g.currency} ${s.amount.toFixed(0)}</div>
+    </div>`
+  ).join('') : `<div style="text-align:center;padding:20px;color:var(--green);font-weight:600">✅ 已結清！</div>`;
+
+  document.getElementById('detail-content').innerHTML = `
+    <div class="page-header" style="margin-bottom:16px">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px">
+        <div>
+          <h1 style="font-size:1.7rem">${g.name}</h1>
+          <p>${g.date} · ${g.currency} · ${g.members.length} 人</p>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-ghost btn-sm" onclick="openShareModal()">🔗 分享連結</button>
+          <button class="btn btn-accent btn-sm" onclick="openAddExpense()">＋ 新增消費</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="summary-grid">
+      <div class="summary-stat">
+        <div class="val">${g.currency} ${total.toFixed(0)}</div>
+        <div class="lbl">總消費（含小費）</div>
+      </div>
+      <div class="summary-stat">
+        <div class="val">${g.currency} ${g.members.length ? (total/g.members.length).toFixed(0) : 0}</div>
+        <div class="lbl">每人平均</div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:16px">
+      <div class="section-title">消費明細</div>
+      ${expensesHtml}
+    </div>
+
+    <div class="card" style="margin-bottom:16px">
+      <div class="section-title">結餘一覽</div>
+      ${balHtml}
+    </div>
+
+    <div class="card">
+      <div class="section-title">💸 建議轉帳</div>
+      ${settlHtml}
+    </div>
+  `;
+}
+
+function calcSettlements(bal) {
+  const debtors = Object.entries(bal).filter(([,v])=>v<-0.01).map(([n,v])=>({n,v})).sort((a,b)=>a.v-b.v);
+  const creditors = Object.entries(bal).filter(([,v])=>v>0.01).map(([n,v])=>({n,v})).sort((a,b)=>b.v-a.v);
+  const result = [];
+  let i=0, j=0;
+  while(i<debtors.length && j<creditors.length) {
+    const d=debtors[i], c=creditors[j];
+    const amt = Math.min(-d.v, c.v);
+    result.push({from:d.n, to:c.n, amount:amt});
+    d.v+=amt; c.v-=amt;
+    if(Math.abs(d.v)<0.01) i++;
+    if(Math.abs(c.v)<0.01) j++;
+  }
+  return result;
+}
+
+function deleteExpense(eid) {
+  const g = state.gatherings.find(x=>x.id===state.currentGatheringId);
+  if (!g) return;
+  g.expenses = g.expenses.filter(e=>e.id!==eid);
+  renderDetail();
+  toast('消費已刪除');
+}
+
+// ════════════════════════════════════════════
+//  NEW GATHERING MODAL
+// ════════════════════════════════════════════
+function openNewGatheringModal() {
+  document.getElementById('g-name').value = '';
+  document.getElementById('g-date').value = new Date().toISOString().split('T')[0];
+  document.getElementById('g-members').value = '';
+  const sel = document.getElementById('g-group');
+  sel.innerHTML = '<option value="">不選群組，手動加入成員</option>' +
+    state.groups.map(g=>`<option value="${g.id}">${g.emoji||'👥'} ${g.name}</option>`).join('');
+  document.getElementById('g-manual-members-wrap').style.display='block';
+  openModal('modal-gathering');
+}
+function onGatheringGroupChange() {
+  const v = document.getElementById('g-group').value;
+  document.getElementById('g-manual-members-wrap').style.display = v ? 'none' : 'block';
+}
+function createGathering() {
+  const name = document.getElementById('g-name').value.trim();
+  if (!name) { toast('請填寫聚會名稱'); return; }
+  const date = document.getElementById('g-date').value;
+  const currency = document.getElementById('g-currency').value;
+  const groupId = document.getElementById('g-group').value;
+  let members = [];
+  if (groupId) {
+    const grp = state.groups.find(g=>g.id===groupId);
+    if (grp) members = [...grp.members];
+  } else {
+    members = document.getElementById('g-members').value.split(',').map(s=>s.trim()).filter(Boolean);
+  }
+  const g = { id: uid(), name, date, currency, members, expenses: [] };
+  state.gatherings.push(g);
+  closeModal('modal-gathering');
+  renderGatherings();
+  toast('聚會建立成功 🎉');
+}
+
+// ════════════════════════════════════════════
+//  EXPENSE MODAL
+// ════════════════════════════════════════════
+function openAddExpense() {
+  const g = state.gatherings.find(x=>x.id===state.currentGatheringId);
+  if (!g) return;
+  document.getElementById('e-desc').value = '';
+  document.getElementById('e-amount').value = '';
+  state.currentExpenseImage = null;
+  state.currentTips = 0;
+  document.getElementById('e-tips-range').value = 0;
+  document.getElementById('e-tips-display').textContent = '0%';
+  document.getElementById('e-tips-amount').textContent = '$0';
+  document.getElementById('e-tips-total').textContent = '$0';
+  document.getElementById('e-upload-hint').style.display='block';
+  document.getElementById('e-upload-preview').innerHTML='';
+  document.querySelectorAll('.tips-preset').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tips-preset')[0].classList.add('active');
+  const payerSel = document.getElementById('e-payer');
+  payerSel.innerHTML = g.members.map(m=>`<option value="${m}">${m}</option>`).join('');
+  const splitEl = document.getElementById('e-split-members');
+  splitEl.innerHTML = g.members.map(m=>`
+    <div class="member-chip selected" data-member="${m}" onclick="toggleSplitMember(this)">
+      <div class="expense-avatar chip-av ${colorFor(m)}">${initials(m)}</div>${m}
+    </div>`).join('');
+  openModal('modal-expense');
+}
+
+function toggleSplitMember(el) {
+  el.classList.toggle('selected');
+}
+
+function setTips(pct) {
+  state.currentTips = pct;
+  document.getElementById('e-tips-range').value = pct;
+  document.getElementById('e-tips-display').textContent = pct+'%';
+  document.querySelectorAll('.tips-preset').forEach(b => {
+    b.classList.toggle('active', parseInt(b.textContent)===pct);
+  });
+  updateExpenseTips();
+}
+function onTipsRange() {
+  const v = parseInt(document.getElementById('e-tips-range').value);
+  state.currentTips = v;
+  document.getElementById('e-tips-display').textContent = v+'%';
+  document.querySelectorAll('.tips-preset').forEach(b => {
+    b.classList.toggle('active', parseInt(b.textContent)===v);
+  });
+  updateExpenseTips();
+}
+function updateExpenseTips() {
+  const base = parseFloat(document.getElementById('e-amount').value)||0;
+  const tips = state.currentTips;
+  const tipsAmt = base*tips/100;
+  const total = base+tipsAmt;
+  const g = state.gatherings.find(x=>x.id===state.currentGatheringId);
+  const curr = g ? g.currency : '';
+  document.getElementById('e-tips-amount').textContent = curr+' '+tipsAmt.toFixed(0);
+  document.getElementById('e-tips-total').textContent = curr+' '+total.toFixed(0);
+}
+
+function handleImageUpload(ev) {
+  const file = ev.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    state.currentExpenseImage = e.target.result;
+    document.getElementById('e-upload-hint').style.display='none';
+    document.getElementById('e-upload-preview').innerHTML =
+      `<div class="upload-preview">
+        <img src="${e.target.result}" alt="preview">
+        <button class="remove-img" onclick="removeImage()">✕</button>
+      </div>`;
+  };
+  reader.readAsDataURL(file);
+}
+function removeImage() {
+  state.currentExpenseImage = null;
+  document.getElementById('e-upload-hint').style.display='block';
+  document.getElementById('e-upload-preview').innerHTML='';
+  document.getElementById('e-image-input').value='';
+}
+
+function addExpense() {
+  const g = state.gatherings.find(x=>x.id===state.currentGatheringId);
+  if (!g) return;
+  const desc = document.getElementById('e-desc').value.trim();
+  const amount = parseFloat(document.getElementById('e-amount').value);
+  const payer = document.getElementById('e-payer').value;
+  const splitWith = Array.from(document.querySelectorAll('.member-chip.selected')).map(el=>el.dataset.member);
+  if (!desc) { toast('請填寫描述'); return; }
+  if (!amount || amount<=0) { toast('請填寫有效金額'); return; }
+  if (!splitWith.length) { toast('請選擇至少一位分攤成員'); return; }
+  g.expenses.push({ id: uid(), desc, amount, payer, splitWith, tips: state.currentTips, image: state.currentExpenseImage });
+  closeModal('modal-expense');
+  renderDetail();
+  toast('消費已加入 ✅');
+}
+
+// ════════════════════════════════════════════
+//  GROUPS
+// ════════════════════════════════════════════
+function renderGroups() {
+  const el = document.getElementById('groups-list');
+  if (!state.groups.length) {
+    el.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><div class="icon">👥</div><h3>還沒有群組</h3><p>點擊「新增群組」建立你的第一個群組</p></div>`;
+    return;
+  }
+  const palettes = [
+    'linear-gradient(135deg,#ffe4d6,#ffc5b0)',
+    'linear-gradient(135deg,#d6e8ff,#b0ceff)',
+    'linear-gradient(135deg,#d6ffe4,#b0f5cc)',
+    'linear-gradient(135deg,#fff3d6,#ffe8a0)',
+    'linear-gradient(135deg,#ead6ff,#d4b0ff)',
+  ];
+  el.innerHTML = state.groups.map((g,i) => {
+    const membersHtml = g.members.slice(0,5).map(m=>`<div class="group-member-av ${colorFor(m)}">${initials(m)}</div>`).join('');
+    const extra = g.members.length>5 ? `<div class="group-member-av" style="background:var(--cream);color:var(--muted)">+${g.members.length-5}</div>` : '';
+    return `<div class="card group-card">
+      <div class="group-banner" style="background:${palettes[i%palettes.length]}">${g.emoji||'👥'}</div>
+      <h3>${g.name}</h3>
+      <div style="font-size:0.82rem;color:var(--muted)">${g.members.length} 位成員</div>
+      <div class="group-members-preview">${membersHtml}${extra}</div>
+      <div style="margin-top:14px;display:flex;gap:8px">
+        <button class="btn btn-ghost btn-sm" onclick="editGroup('${g.id}')">✏️ 編輯</button>
+        <button class="btn btn-ghost btn-sm" onclick="deleteGroup('${g.id}')">🗑 刪除</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function openNewGroupModal() {
+  state.editingGroupId = null;
+  document.getElementById('group-modal-title').textContent = '新增群組';
+  document.getElementById('grp-name').value = '';
+  document.getElementById('grp-emoji').value = '';
+  document.getElementById('grp-members').value = '';
+  openModal('modal-group');
+}
+function editGroup(id) {
+  const g = state.groups.find(x=>x.id===id);
+  if (!g) return;
+  state.editingGroupId = id;
+  document.getElementById('group-modal-title').textContent = '編輯群組';
+  document.getElementById('grp-name').value = g.name;
+  document.getElementById('grp-emoji').value = g.emoji||'';
+  document.getElementById('grp-members').value = g.members.join('\n');
+  openModal('modal-group');
+}
+function saveGroup() {
+  const name = document.getElementById('grp-name').value.trim();
+  if (!name) { toast('請填寫群組名稱'); return; }
+  const emoji = document.getElementById('grp-emoji').value.trim()||'👥';
+  const members = document.getElementById('grp-members').value.split('\n').map(s=>s.trim()).filter(Boolean);
+  if (!members.length) { toast('請至少加入一位成員'); return; }
+  if (state.editingGroupId) {
+    const g = state.groups.find(x=>x.id===state.editingGroupId);
+    if (g) { g.name=name; g.emoji=emoji; g.members=members; }
+  } else {
+    state.groups.push({ id: uid(), name, emoji, members });
+  }
+  closeModal('modal-group');
+  renderGroups();
+  toast(state.editingGroupId ? '群組已更新 ✅' : '群組建立成功 🎉');
+}
+function deleteGroup(id) {
+  state.groups = state.groups.filter(g=>g.id!==id);
+  renderGroups();
+  toast('群組已刪除');
+}
+
+// ════════════════════════════════════════════
+//  SHARE
+// ════════════════════════════════════════════
+function openShareModal() {
+  const g = state.gatherings.find(x=>x.id===state.currentGatheringId);
+  if (!g) return;
+  const url = `${location.href.split('?')[0]}?gather=${g.id}&name=${encodeURIComponent(g.name)}`;
+  document.getElementById('share-url-text').textContent = url;
+  openModal('modal-share');
+}
+function copyShareUrl() {
+  const url = document.getElementById('share-url-text').textContent;
+  navigator.clipboard.writeText(url).then(()=>toast('連結已複製 📋'));
+}
+
+// ════════════════════════════════════════════
+//  MODAL HELPERS
+// ════════════════════════════════════════════
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-overlay').forEach(m => {
+  m.addEventListener('click', e => { if(e.target===m) m.classList.remove('open'); });
+});
+
+// ════════════════════════════════════════════
+//  LIGHTBOX
+// ════════════════════════════════════════════
+function openLightbox(src) {
+  document.getElementById('lightbox-img').src = src;
+  document.getElementById('lightbox').classList.add('open');
+}
+function closeLightbox() {
+  document.getElementById('lightbox').classList.remove('open');
+}
+
+// ════════════════════════════════════════════
+//  TOAST
+// ════════════════════════════════════════════
+let toastTimer;
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>el.classList.remove('show'), 2500);
+}
+
+// ════════════════════════════════════════════
+//  INIT
+// ════════════════════════════════════════════
+seed();
+renderGatherings();
+</script>
+</body>
+</html>
