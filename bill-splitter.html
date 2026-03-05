@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>分帳神器 · SplitEase</title>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+
 <style>
   :root {
     --ink: #0d0d0d;
@@ -24,7 +24,7 @@
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
   body {
-    font-family: 'DM Sans', sans-serif;
+    font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
     background: var(--paper);
     color: var(--ink);
     min-height: 100vh;
@@ -42,7 +42,7 @@
     height: 60px;
   }
   .nav-logo {
-    font-family: 'Syne', sans-serif;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
     font-weight: 800; font-size: 1.2rem;
     letter-spacing: -0.5px; color: var(--ink);
   }
@@ -51,7 +51,7 @@
   .nav-tab {
     padding: 7px 16px; border-radius: 50px;
     border: none; background: none; cursor: pointer;
-    font-family: 'DM Sans', sans-serif; font-size: 0.875rem; font-weight: 500;
+    font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 0.875rem; font-weight: 500;
     color: var(--muted); transition: all 0.2s;
   }
   .nav-tab.active { background: var(--ink); color: #fff; }
@@ -65,7 +65,7 @@
   /* ── HEADINGS ── */
   .page-header { margin-bottom: 28px; }
   .page-header h1 {
-    font-family: 'Syne', sans-serif; font-weight: 800;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; font-weight: 800;
     font-size: 2rem; letter-spacing: -1px; line-height: 1.1;
   }
   .page-header p { color: var(--muted); margin-top: 6px; font-size: 0.9rem; }
@@ -74,7 +74,7 @@
   .btn {
     display: inline-flex; align-items: center; gap: 7px;
     padding: 10px 20px; border-radius: 50px; border: none;
-    font-family: 'DM Sans', sans-serif; font-size: 0.875rem; font-weight: 600;
+    font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 0.875rem; font-weight: 600;
     cursor: pointer; transition: all 0.18s;
   }
   .btn-primary { background: var(--ink); color: #fff; }
@@ -106,7 +106,7 @@
   .form-input, .form-select, .form-textarea {
     width: 100%; padding: 11px 14px;
     border: 1.5px solid var(--border); border-radius: 12px;
-    font-family: 'DM Sans', sans-serif; font-size: 0.9rem;
+    font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 0.9rem;
     background: var(--paper); color: var(--ink);
     transition: border-color 0.2s;
     outline: none;
@@ -136,7 +136,7 @@
     display: flex; align-items: center; justify-content: space-between;
     margin-bottom: 24px;
   }
-  .modal-title { font-family: 'Syne', sans-serif; font-size: 1.3rem; font-weight: 700; }
+  .modal-title { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; font-size: 1.3rem; font-weight: 700; }
   .modal-close {
     width: 32px; height: 32px; border-radius: 50%; border: none;
     background: var(--cream); cursor: pointer; font-size: 1rem;
@@ -153,7 +153,7 @@
   }
   .gathering-card:hover { transform: translateY(-2px); }
   .gathering-info h3 {
-    font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1rem;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; font-weight: 700; font-size: 1rem;
     margin-bottom: 4px;
   }
   .gathering-meta { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 8px; }
@@ -168,7 +168,7 @@
     text-align: right; flex-shrink: 0;
   }
   .gathering-amount .total {
-    font-family: 'Syne', sans-serif; font-size: 1.3rem; font-weight: 800;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; font-size: 1.3rem; font-weight: 800;
     color: var(--ink);
   }
   .gathering-amount .label { font-size: 0.75rem; color: var(--muted); }
@@ -187,7 +187,7 @@
   .expense-info { flex: 1; min-width: 0; }
   .expense-info .name { font-weight: 600; font-size: 0.9rem; }
   .expense-info .desc { font-size: 0.8rem; color: var(--muted); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .expense-amount { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1rem; flex-shrink: 0; }
+  .expense-amount { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; font-weight: 700; font-size: 1rem; flex-shrink: 0; }
   .expense-thumb {
     width: 48px; height: 48px; border-radius: 10px; object-fit: cover;
     border: 1.5px solid var(--border); cursor: pointer; flex-shrink: 0;
@@ -197,7 +197,7 @@
   .summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
   .summary-stat { padding: 16px; background: var(--cream); border-radius: 14px; }
   .summary-stat .val {
-    font-family: 'Syne', sans-serif; font-size: 1.5rem; font-weight: 800;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; font-size: 1.5rem; font-weight: 800;
   }
   .summary-stat .lbl { font-size: 0.78rem; color: var(--muted); margin-top: 3px; }
   .balance-row {
@@ -206,7 +206,7 @@
     margin-bottom: 8px;
   }
   .balance-row .person { font-weight: 600; font-size: 0.9rem; }
-  .balance-row .amount { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.95rem; }
+  .balance-row .amount { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; font-weight: 700; font-size: 0.95rem; }
   .balance-row.owed .amount { color: var(--accent); }
   .balance-row.owns .amount { color: var(--green); }
 
@@ -218,7 +218,7 @@
     font-size: 0.88rem; font-weight: 500;
   }
   .settlement-row .arrow { color: var(--gold); font-size: 1.1rem; }
-  .settlement-row .amt { font-family: 'Syne', sans-serif; font-weight: 800; color: var(--gold); margin-left: auto; }
+  .settlement-row .amt { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; font-weight: 800; color: var(--gold); margin-left: auto; }
 
   /* ── TIPS SLIDER ── */
   .tips-control {
@@ -228,7 +228,7 @@
   .tips-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
   .tips-label { font-weight: 600; font-size: 0.88rem; }
   .tips-value {
-    font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.1rem;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; font-weight: 800; font-size: 1.1rem;
     color: var(--accent);
   }
   input[type=range] {
@@ -273,7 +273,7 @@
     display: flex; align-items: center; justify-content: center;
     font-size: 2rem;
   }
-  .group-card h3 { font-family: 'Syne', sans-serif; font-weight: 700; margin-bottom: 6px; }
+  .group-card h3 { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; font-weight: 700; margin-bottom: 6px; }
   .group-members-preview { display: flex; margin-top: 10px; }
   .group-member-av {
     width: 30px; height: 30px; border-radius: 50%;
@@ -342,7 +342,7 @@
   /* ── DIVIDER ── */
   .divider { border: none; border-top: 1.5px solid var(--border); margin: 20px 0; }
   .section-title {
-    font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1rem;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; font-weight: 700; font-size: 1rem;
     margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between;
   }
 
@@ -361,7 +361,7 @@
     text-align: center; padding: 60px 20px; color: var(--muted);
   }
   .empty-state .icon { font-size: 3rem; margin-bottom: 12px; }
-  .empty-state h3 { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1.1rem; color: var(--ink); margin-bottom: 6px; }
+  .empty-state h3 { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; font-weight: 700; font-size: 1.1rem; color: var(--ink); margin-bottom: 6px; }
 
   @media (max-width: 600px) {
     .form-row.cols-2, .form-row.cols-3 { grid-template-columns: 1fr; }
