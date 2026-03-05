@@ -449,16 +449,7 @@
       <label class="form-label">手動加入成員（逗號分隔）</label>
       <input class="form-input" id="g-members" placeholder="例：Alice, Bob, Carol">
     </div>
-    <div class="form-group">
-      <label class="form-label">幣別</label>
-      <select class="form-select" id="g-currency">
-        <option value="HKD">HKD 港幣</option>
-        <option value="TWD" selected>TWD 台幣</option>
-        <option value="USD">USD 美金</option>
-        <option value="JPY">JPY 日圓</option>
-        <option value="CNY">CNY 人民幣</option>
-      </select>
-    </div>
+
     <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:20px;">
       <button class="btn btn-ghost" onclick="closeModal('modal-gathering')">取消</button>
       <button class="btn btn-primary" onclick="createGathering()">建立聚會</button>
@@ -608,7 +599,7 @@ function seed() {
       id: g1id,
       name: '大學同學聚餐',
       date: '2025-03-01',
-      currency: 'TWD',
+      currency: '$',
       members: ['Alice','Bob','Carol','David'],
       expenses: [
         { id: uid(), desc: '晚餐', amount: 1200, payer: 'Alice', splitWith: ['Alice','Bob','Carol','David'], tips: 10, image: null },
@@ -651,12 +642,12 @@ function renderGatherings() {
         <div class="gathering-meta">
           <span class="tag blue">👥 ${g.members.length} 人</span>
           <span class="tag">${g.expenses.length} 筆消費</span>
-          <span class="tag">${g.currency}</span>
+
         </div>
       </div>
       <div class="gathering-amount">
-        <div class="total">${g.currency} ${total.toFixed(0)}</div>
-        <div class="label">每人約 ${per.toFixed(0)}</div>
+        <div class="total">$${total.toFixed(2)}</div>
+        <div class="label">每人約 $${per.toFixed(2)}</div>
       </div>
     </div>`;
   }).join('');
@@ -706,7 +697,7 @@ function renderDetail() {
         <div class="desc">由 ${e.payer} 付款 · 分攤: ${e.splitWith.join(', ')}</div>
       </div>
       ${imgHtml}
-      <div class="expense-amount">${g.currency} ${amountWithTips(e).toFixed(0)}</div>
+      <div class="expense-amount">$${amountWithTips(e).toFixed(2)}</div>
       <button class="btn btn-ghost btn-sm btn-icon" onclick="deleteExpense('${e.id}')" title="刪除">🗑</button>
     </div>`;
   }).join('') : `<div style="text-align:center;padding:30px;color:var(--muted)">還沒有消費記錄</div>`;
@@ -717,7 +708,7 @@ function renderDetail() {
     return `<div class="balance-row ${cls}">
       <div class="expense-avatar ${colorFor(m)}" style="width:32px;height:32px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:700;margin-right:8px">${initials(m)}</div>
       <div class="person">${m}</div>
-      <div class="amount">${v>=0?'+':''}${g.currency} ${Math.abs(v).toFixed(0)}</div>
+      <div class="amount">${v>=0?'+':''}$${Math.abs(v).toFixed(2)}</div>
     </div>`;
   }).join('');
 
@@ -728,7 +719,7 @@ function renderDetail() {
       <span class="arrow">→</span>
       <div class="expense-avatar ${colorFor(s.to)}" style="width:28px;height:28px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:0.68rem;font-weight:700">${initials(s.to)}</div>
       <strong>${s.to}</strong>
-      <div class="amt">${g.currency} ${s.amount.toFixed(0)}</div>
+      <div class="amt">$${s.amount.toFixed(2)}</div>
     </div>`
   ).join('') : `<div style="text-align:center;padding:20px;color:var(--green);font-weight:600">✅ 已結清！</div>`;
 
@@ -737,7 +728,7 @@ function renderDetail() {
       <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px">
         <div>
           <h1 style="font-size:1.7rem">${g.name}</h1>
-          <p>${g.date} · ${g.currency} · ${g.members.length} 人</p>
+          <p>${g.date} · ${g.members.length} 人</p>
         </div>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
           <button class="btn btn-ghost btn-sm" onclick="openShareModal()">🔗 分享連結</button>
@@ -748,11 +739,11 @@ function renderDetail() {
 
     <div class="summary-grid">
       <div class="summary-stat">
-        <div class="val">${g.currency} ${total.toFixed(0)}</div>
+        <div class="val">$${total.toFixed(2)}</div>
         <div class="lbl">總消費（含小費）</div>
       </div>
       <div class="summary-stat">
-        <div class="val">${g.currency} ${g.members.length ? (total/g.members.length).toFixed(0) : 0}</div>
+        <div class="val">$${g.members.length ? (total/g.members.length).toFixed(2) : '0.00'}</div>
         <div class="lbl">每人平均</div>
       </div>
     </div>
@@ -819,7 +810,7 @@ function createGathering() {
   const name = document.getElementById('g-name').value.trim();
   if (!name) { toast('請填寫聚會名稱'); return; }
   const date = document.getElementById('g-date').value;
-  const currency = document.getElementById('g-currency').value;
+  const currency = '$';
   const groupId = document.getElementById('g-group').value;
   let members = [];
   if (groupId) {
@@ -890,10 +881,8 @@ function updateExpenseTips() {
   const tips = state.currentTips;
   const tipsAmt = base*tips/100;
   const total = base+tipsAmt;
-  const g = state.gatherings.find(x=>x.id===state.currentGatheringId);
-  const curr = g ? g.currency : '';
-  document.getElementById('e-tips-amount').textContent = curr+' '+tipsAmt.toFixed(0);
-  document.getElementById('e-tips-total').textContent = curr+' '+total.toFixed(0);
+  document.getElementById('e-tips-amount').textContent = '$ '+tipsAmt.toFixed(2);
+  document.getElementById('e-tips-total').textContent = '$ '+total.toFixed(2);
 }
 
 function handleImageUpload(ev) {
